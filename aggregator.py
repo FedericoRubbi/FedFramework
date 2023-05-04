@@ -52,7 +52,7 @@ class Server:
         logger.info(f"Updating selected {len(round_clients)} clients: "
                     f"{', '.join([str(c.id) for c in round_clients])}.")
 
-        if (self.threaded):
+        if self.threaded:
             with ThreadPool(len(round_clients)) as pool:
                 pool.map(lambda client: client.update(), round_clients)
         else:

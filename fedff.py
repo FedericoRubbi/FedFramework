@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from model import FFNetwork
 from aggregator import Client, Server
 
-
 LAYER_EPOCHS = 50
 BIAS_THRESHOLD = 10
 LEARN_RATE = 0.3
@@ -25,7 +24,7 @@ MAX_CLIENTS = 500
 NUM_CLIENTS = 100
 C_RATE = 0.5
 
-NUM_REPEAT = 1
+NUM_REPEAT = 2
 BATCH_SIZE = 10  # from FedAvg paper
 SHUFFLE_BUF = int(NUM_REPEAT * 0.75 * 100)  # 100 is the average client dataset size
 PREFETCH_BUF = tf.data.AUTOTUNE
@@ -37,7 +36,6 @@ LOGPATH = os.path.join(SCRIPTPATH, 'log', f"{TIMESTAMP}.log")
 RESULTPATH = os.path.join(SCRIPTPATH, 'simulations/results', TIMESTAMP)
 
 SEED = 1
-
 
 logging.basicConfig(level=logging.INFO, filename=LOGPATH, force=True,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -53,7 +51,8 @@ def load_datasets():
                 open(f'{DATAPATH}/train/y_train_{i}.npy', 'rb') as fy:
             dataset = tf.data.Dataset.from_tensor_slices((np.load(fx),
                                                           np.load(fy)))
-            train_datasets.append(dataset.shuffle(SHUFFLE_BUF, seed=SEED)
+            train_datasets.append(dataset.repeat(NUM_REPEAT)
+                                  .shuffle(SHUFFLE_BUF, seed=SEED)
                                   .batch(BATCH_SIZE).prefetch(PREFETCH_BUF))
     for i in range(MAX_CLIENTS):
         i = ''.join(('00', str(i)))[-3:]
@@ -153,7 +152,6 @@ def main():
 
     save_plots(clients, accuracy)
     save_data(clients, accuracy, updated_model)
-    breakpoint()
 
 
 if __name__ == "__main__":
