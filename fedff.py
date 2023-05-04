@@ -32,7 +32,7 @@ PREFETCH_BUF = tf.data.AUTOTUNE
 TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 SCRIPTPATH = os.path.dirname(os.path.realpath(__file__))
 DATAPATH = os.path.join(SCRIPTPATH, 'clients/datasets')
-LOGPATH = os.path.join(SCRIPTPATH, 'log', f"{TIMESTAMP}.log")
+LOGPATH = os.path.join(SCRIPTPATH, 'log', TIMESTAMP + '.log')
 RESULTPATH = os.path.join(SCRIPTPATH, 'simulations/results', TIMESTAMP)
 
 SEED = 1
@@ -82,7 +82,7 @@ def initialize_nodes(train_datasets):
         clients.append(Client(i, model_init(), train_datasets[i],
                               epochs=MODEL_EPOCHS))
         clients[i].model.compile(jit_compile=True)  # TODO: check compile parameters
-    server = Server(clients, threaded=False)
+    server = Server(clients, threaded=True)
     logger.info("Clients and server nodes initialized")
     return clients, server
 
