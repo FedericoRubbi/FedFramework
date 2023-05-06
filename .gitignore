@@ -2,6 +2,8 @@
 clients/
 simulations/
 log/
+*.o*
+*.e*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
