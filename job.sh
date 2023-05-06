@@ -12,6 +12,10 @@
 #PBS -q common_cpuQ
 
 # Redirect output to log file.
-# -e /home/federico.rubbi/project/FedFF/log/job.log
-
-python3 /home/federico.rubbi/project/FedFF/fedff.py
+#PBS -e /home/federico.rubbi/project/FedFF/log/job.log
+module load python-3.8.13
+module load cuda-11.1
+source /home/federico.rubbi/flenv/bin/activate
+#export PYTHONPATH=/home/federico.rubbi/flenv/lib/python3.8/site-packages:$PYTHONPATH
+python --version
+python /home/federico.rubbi/project/FedFF/fedff.py
