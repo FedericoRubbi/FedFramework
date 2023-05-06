@@ -14,7 +14,7 @@ from aggregator import Client, Server
 
 LAYER_EPOCHS = 50
 BIAS_THRESHOLD = 10
-LEARN_RATE = 0.3
+LEARN_RATE = 0.1
 WEIGHT_DECAY = 1e-5
 MODEL_UNITS = [784, 1000, 1000, 1000]
 
@@ -22,17 +22,17 @@ MODEL_EPOCHS = 50
 NUM_ROUNDS = 50
 MAX_CLIENTS = 500
 NUM_CLIENTS = 100
-C_RATE = 0.5
+C_RATE = 0.1
 
 NUM_REPEAT = 2
 BATCH_SIZE = 10  # from FedAvg paper
-SHUFFLE_BUF = int(NUM_REPEAT * 0.75 * 100)  # 100 is the average client dataset size
+SHUFFLE_BUF = int(NUM_REPEAT * 0.75 * 100)
 PREFETCH_BUF = tf.data.AUTOTUNE
 
 TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 SCRIPTPATH = os.path.dirname(os.path.realpath(__file__))
 DATAPATH = os.path.join(SCRIPTPATH, 'clients/datasets')
-LOGPATH = os.path.join(SCRIPTPATH, 'log', TIMESTAMP + '.log')
+LOGPATH = os.path.join(SCRIPTPATH, 'log', f"{TIMESTAMP}.log")
 RESULTPATH = os.path.join(SCRIPTPATH, 'simulations/results', TIMESTAMP)
 
 SEED = 1
@@ -40,6 +40,26 @@ SEED = 1
 logging.basicConfig(level=logging.INFO, filename=LOGPATH, force=True,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
+
+
+def log_params():
+    logger.info("Saving current parameters configuration.")
+    logger.info(f"- LAYER_EPOCHS:  {LAYER_EPOCHS}")
+    logger.info(f"- BIAS_THRESHOLD:  {BIAS_THRESHOLD}")
+    logger.info(f"- LEARN_RATE:  {LEARN_RATE}")
+    logger.info(f"- WEIGHT_DECAY:  {WEIGHT_DECAY}")
+    logger.info(f"- MODEL_UNITS:  {MODEL_UNITS}")
+
+    logger.info(f"- MODEL_EPOCHS:  {MODEL_EPOCHS}")
+    logger.info(f"- NUM_ROUNDS:  {NUM_ROUNDS}")
+    logger.info(f"- MAX_CLIENTS:  {MAX_CLIENTS}")
+    logger.info(f"- NUM_CLIENTS:  {NUM_CLIENTS}")
+    logger.info(f"- C_RATE:  {C_RATE}")
+
+    logger.info(f"- NUM_REPEAT:  {NUM_REPEAT}")
+    logger.info(f"- BATCH_SIZE:  {BATCH_SIZE}")
+    logger.info(f"- SHUFFLE_BUF:  {SHUFFLE_BUF}")
+    logger.info(f"- PREFETCH_BUF:  {PREFETCH_BUF}")
 
 
 def load_datasets():
@@ -81,7 +101,7 @@ def initialize_nodes(train_datasets):
     for i in range(NUM_CLIENTS):
         clients.append(Client(i, model_init(), train_datasets[i],
                               epochs=MODEL_EPOCHS))
-        clients[i].model.compile(jit_compile=True)  # TODO: check compile parameters
+        clients[i].model.compile(jit_compile=True)
     server = Server(clients, threaded=True)
     logger.info("Clients and server nodes initialized")
     return clients, server
@@ -107,7 +127,7 @@ def save_plots(clients, accuracy):
                      y - error, y + error, alpha=0.3)
     for loss in l:
         plt.plot(np.linspace(1, NUM_ROUNDS, num=len(loss)),
-                 loss, color="lightsteelblue")
+                 loss, color=(*np.random.random(2), 0.5))
     plt.plot(np.linspace(1, NUM_ROUNDS, num=len(y)), y, color='dodgerblue')
     plt.title("Loss over training")
     plt.savefig(os.path.join(RESULTPATH, "loss.png"))
@@ -136,10 +156,13 @@ def save_data(clients, accuracy, updated_model):
                              for client in clients], dtype=object))
     with open(os.path.join(RESULTPATH, "accuracy"), "wb+") as f:
         np.save(f, np.array(accuracy))
-    updated_model.save_weights(os.path.join(RESULTPATH, "model"))
+    for c in clients:
+        c.model.save_weights(os.path.join(RESULTPATH, f"model_{c.id}"))
+    updated_model.save_weights(os.path.join(RESULTPATH, "final_model"))
 
 
 def main():
+    log_params()
     train_datasets, test_dataset = load_datasets()
     clients, server = initialize_nodes(train_datasets)
 
@@ -149,6 +172,7 @@ def main():
         updated_model = server.execute_round()
         logger.info("Starting model evaluation.")
         accuracy.append(updated_model.evaluate_accuracy(test_dataset))
+        logger.info(f"Evaluated model accuracy: {accuracy[-1]}.")
 
     save_plots(clients, accuracy)
     save_data(clients, accuracy, updated_model)
