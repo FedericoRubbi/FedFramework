@@ -1,6 +1,8 @@
 # Project
 clients/
 # simulations/
+*.index
+*.data*
 # log/
 *.o*
 *.e*
@@ -63,7 +65,7 @@ cover/
 *.pot
 
 # Django stuff:
-*.log
+#*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal

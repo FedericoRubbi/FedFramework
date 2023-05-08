@@ -2,11 +2,11 @@
 
 # Run with: "qsub -I scriptname".
 
-#PBS -l select=12:ncpus=10:mem=25gb
+#PBS -l select=13:ncpus=10:mem=20gb
 
 # Maximum execution time (the longer the time, the longer the job
 # will stay in the queue before running actually).
-#PBS -l walltime=48:00:00
+#PBS -l walltime=47:00:00
 
 # Set the execution queue.
 #PBS -q common_cpuQ
