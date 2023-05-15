@@ -23,15 +23,21 @@ class Client:
         self.epochs = epochs
         self.history = []
         self.round_cnt = 0
+        self.rounds = []
         logger.info(f"Initialized client {id} "
                     f"with dataset size: {self.dataset_size} samples.")
 
-    def update(self):
+    def update(self, round_index=None):
         logger.info(f"Updating client: {self.id}.")
         history = self.model.fit(self.dataset, epochs=self.epochs)
         logger.info(f"Done updating client: {self.id}.")
         self.history.append(history)
         self.round_cnt += 1
+        if round_index is not None:
+            self.rounds.append(round_index)
+    
+    def log_rounds(self):
+        logger.info(f"Client {self.id} was updated in rounds: {', '.join(self.rounds)}.")
 
 
 class Server:
@@ -46,7 +52,7 @@ class Server:
         logger.info(f"Initialized server with threaded mode: "
                     f"{'enabled' if threaded else 'disabled'}.")
 
-    def execute_round(self):
+    def execute_round(self, round_index=None):
         round_clients = default_rng().choice(
             self.clients, size=max(int(0.1*self.max_clients), 1), replace=False)
         logger.info(f"Updating selected {len(round_clients)} clients: "
@@ -54,10 +60,10 @@ class Server:
 
         if self.threaded:
             with ThreadPool(len(round_clients)) as pool:
-                pool.map(lambda client: client.update(), round_clients)
+                pool.map(lambda client: client.update(round_index), round_clients)
         else:
             for client in round_clients:
-                client.update()
+                client.update(round_index)
         logger.info("Done updating clients.")
 
         logger.info("Aggregating updated clients model.")
