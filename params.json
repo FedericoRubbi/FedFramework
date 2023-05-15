@@ -1,0 +1,21 @@
+{
+    "layer_epochs":50,
+    "bias_threshold":10,
+    "learn_rate":0.1,
+    "weight_decay":1e-5,
+    "model_units":[
+        784,
+        1000,
+        1000,
+        1000
+    ],
+    "model_epochs":50,
+    "num_rounds":50,
+    "max_clients":500,
+    "num_clients":100,
+    "c_rate":0.1,
+    "num_repeat":2,
+    "batch_size":10,
+    "shuffle_buf":null,
+    "prefetch_buf":null
+}
