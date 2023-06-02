@@ -2,12 +2,15 @@ from tensorflow import keras
 import numpy as np
 from multiprocessing.pool import ThreadPool
 from numpy.random import default_rng
+from keras.callbacks import CSVLogger
 import logging
+
+from config import config
 
 
 RNG = default_rng(seed=1)
 logger = logging.getLogger()
-
+csv_logger = CSVLogger(config["timestamp"] + '.csv', append=True, separator=';')
 
 class Client:
     """
@@ -27,9 +30,9 @@ class Client:
         logger.info(f"Initialized client {id} "
                     f"with dataset size: {self.dataset_size} samples.")
 
-    def update(self, round_index=None):
+    def update(self, round_index=None, callbacks=[]):
         logger.info(f"Updating client: {self.id}.")
-        history = self.model.fit(self.dataset, epochs=self.epochs)
+        history = self.model.fit(self.dataset, epochs=self.epochs, callbacks=callbacks)
         logger.info(f"Done updating client: {self.id}.")
         self.history.append(history)
         self.round_cnt += 1
@@ -63,7 +66,7 @@ class Server:
                 pool.map(lambda client: client.update(round_index), round_clients)
         else:
             for client in round_clients:
-                client.update(round_index)
+                client.update(round_index, callbacks=[csv_logger])
         logger.info("Done updating clients.")
 
         logger.info("Aggregating updated clients model.")

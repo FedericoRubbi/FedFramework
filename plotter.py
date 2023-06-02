@@ -7,7 +7,7 @@ from config import config, params
 
 from pprint import pprint
 
-logger = logging.getLogger() if __name__ != "__main__" else None
+logger = logging.getLogger()
 
 
 def load_data(path=None):
@@ -33,7 +33,7 @@ def plot(path=None):
     accuracy, loss_data = load_data(path)
     print(len(set([i for (i, r) in enumerate(loss_data) for l in r if any(np.isnan(l))])))
 
-    with open('log/2023-05-07_16-13-24.log', 'r') as f:
+    with open('log/2023-05-07_21-04-49.log', 'r') as f:
         log = [list(map(int, line[63:-2].split(', '))) for line in f.readlines()
                if 'Updating selected 10 clients' in line]
 
@@ -44,6 +44,8 @@ def plot(path=None):
     # for client_i, rounds in enumerate(client_rounds):  # for each client rounds
     #     for loss_i, l in enumerate(loss_data[client_i]):
     #         loss[client_i][rounds[loss_i]] = l
+
+    pprint([(c_i, i) for (c_i, c_l) in enumerate(loss_data) for (i, x) in enumerate(c_l) if any(np.isnan(x))])
 
     for client_i, l in enumerate(loss_data):  # iterate on each client loss
         loss_i = 0
@@ -56,7 +58,7 @@ def plot(path=None):
                 loss_i += 1
             elif round_i:  # make loss continuous
                 loss[client_i][round_i][:] = loss[client_i][round_i - 1][-1]
-
+    breakpoint()
     loss = [loss.flatten() for loss in loss]
     loss = [np.where(l, l, np.max(l)) for l in loss if any(l)]
     avg_loss, err = np.mean(loss, axis=0), np.std(loss, axis=0)
@@ -93,4 +95,4 @@ def plot(path=None):
 
 
 if __name__ == "__main__":
-    plot(path='simulations/results/2023-05-07_16-13-24')
+    plot(path='simulations/results/2023-05-07_21-04-49')
