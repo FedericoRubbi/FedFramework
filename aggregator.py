@@ -10,7 +10,8 @@ from config import config
 
 RNG = default_rng(seed=1)
 logger = logging.getLogger()
-csv_logger = CSVLogger(config["timestamp"] + '.csv', append=True, separator=';')
+csv_logger = CSVLogger(config["logpath"].replace('.log', '.csv'), append=True, separator=';')
+
 
 class Client:
     """
@@ -38,7 +39,7 @@ class Client:
         self.round_cnt += 1
         if round_index is not None:
             self.rounds.append(round_index)
-    
+
     def log_rounds(self):
         logger.info(f"Client {self.id} was updated in rounds: {', '.join(self.rounds)}.")
 
@@ -56,7 +57,7 @@ class Server:
                     f"{'enabled' if threaded else 'disabled'}.")
 
     def execute_round(self, round_index=None):
-        round_clients = default_rng().choice(
+        round_clients = RNG.choice(
             self.clients, size=max(int(0.1*self.max_clients), 1), replace=False)
         logger.info(f"Updating selected {len(round_clients)} clients: "
                     f"{', '.join([str(c.id) for c in round_clients])}.")

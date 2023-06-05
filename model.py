@@ -36,6 +36,7 @@ class FFDense(keras.layers.Layer):
     def call(self, inputs):  # normalize and run the input through the dense layer
         x_norm = tf.norm(inputs, ord=2, axis=1, keepdims=True)
         #x_dir = inputs / (x_norm + 1e-5)
+        x_norm = x_norm + 1e-5
         x_dir = tf.math.divide(inputs, x_norm)  # consider using tf.math.divide_no_nan
         return self.relu(self.dense(x_dir))
 
@@ -158,8 +159,7 @@ class FFNetwork(keras.Model):
             raise e
         return {"FinalLoss": mean_res}
 
-    def evaluate_accuracy(self, data):
-        logger.info("Starting model evaluation.")
+    def eval_accuracy(self, data):
         test_samples, test_labels = data
         preds = self.predict(tf.convert_to_tensor(test_samples))
         preds = preds.reshape((preds.shape[0], preds.shape[1]))
