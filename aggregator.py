@@ -74,7 +74,7 @@ class Server:
             models.append(client.model.get_weights())
             dataset_sizes.append(client.dataset_size)
         new_model = np.average(models, weights=dataset_sizes, axis=0)
-        for client in round_clients:
+        for client in self.clients:  # total partecipation in the broadcast step
             client.model.set_weights(new_model)
         logger.info("Updated model broadcast complete.")
 
