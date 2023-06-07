@@ -90,17 +90,18 @@ def main():
     clients, server = initialize_clients(train_datasets)
 
     avg_accuracy, accuracy, updated_model = [], [], None
+    avg_accuracy.append(server.evaluate_clients(test_dataset))
+    accuracy.append(avg_accuracy[-1])
     for round_i in range(params["num_rounds"]):
         logger.info(f"Running communication round: {round_i}.")
         updated_model = server.execute_round(round_i)
 
         logger.info("Starting model evaluation.")
-        accuracy.append(updated_model.eval_accuracy(test_dataset))
-        logger.info(f"Evaluated updated model accuracy: {accuracy[-1]}.")
-        avg_accuracy.append(server.evaluate_clients(test_dataset))
+        accuracy.append(clients[0].model.eval_accuracy(test_dataset))
+        avg_accuracy.append(accuracy[-1])
         logger.info(f"Evaluated global accuracy: {avg_accuracy[-1]}.")
 
-        if not (round_i % int(params["num_rounds"] * 0.2)) and round_i:  # save checkpoint
+        if not (round_i % max(int(params["num_rounds"] * 0.2), 1)) and round_i:  # save checkpoint
             save_data(clients, avg_accuracy, accuracy, updated_model, checkpoint=True)
 
     for client in clients:
