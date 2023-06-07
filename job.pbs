@@ -16,6 +16,9 @@
 module load python-3.8.13
 module load cuda-11.1
 source /home/federico.rubbi/flenv/bin/activate
-#export PYTHONPATH=/home/federico.rubbi/flenv/lib/python3.8/site-packages:$PYTHONPATH
 python --version
-python /home/federico.rubbi/project/FedFF/fedff.py
+JOBPATH="/home/federico.rubbi/project/FedFF/main.py"
+DATE=$(date -I)
+echo "Date: $DATE"
+echo "Starting job"
+python $JOBPATH
