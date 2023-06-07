@@ -100,7 +100,7 @@ def main():
         avg_accuracy.append(server.evaluate_clients(test_dataset))
         logger.info(f"Evaluated global accuracy: {avg_accuracy[-1]}.")
 
-        if not (round_i % int(params["num_rounds"] * 0.2)) and round_i:  # save checkpoint
+        if not (round_i % max(int(params["num_rounds"] * 0.2), 1)) and round_i:  # save checkpoint
             save_data(clients, avg_accuracy, accuracy, updated_model, checkpoint=True)
 
     for client in clients:
