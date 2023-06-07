@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, filename=config["logpath"], force=True,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 logger = logging.getLogger()
-with open("params.json", "r") as file:
+with open(os.path.join(config["scriptpath"], "params.json"), "r") as file:
     params = json.load(file)
 
 if params["shuffle_buf"] is None:
