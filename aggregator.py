@@ -2,7 +2,6 @@ from tensorflow import keras
 import numpy as np
 from multiprocessing.pool import ThreadPool
 from numpy.random import default_rng
-from keras.callbacks import CSVLogger
 import logging
 
 from config import config
@@ -10,7 +9,6 @@ from config import config
 
 RNG = default_rng(seed=1)
 logger = logging.getLogger()
-csv_logger = CSVLogger(config["logpath"].replace('.log', '.csv'), append=True, separator=';')
 
 
 class Client:
@@ -41,7 +39,7 @@ class Client:
             self.rounds.append(round_index)
 
     def log_rounds(self):
-        logger.info(f"Client {self.id} was updated in rounds: {', '.join(self.rounds)}.")
+        logger.info(f"Client {self.id} was updated in rounds: {', '.join(map(str, self.rounds))}.")
 
 
 class Server:
@@ -67,7 +65,7 @@ class Server:
                 pool.map(lambda client: client.update(round_index), round_clients)
         else:
             for client in round_clients:
-                client.update(round_index, callbacks=[csv_logger])
+                client.update(round_index)
         logger.info("Done updating clients.")
 
         logger.info("Aggregating updated clients model.")
@@ -81,3 +79,10 @@ class Server:
         logger.info("Updated model broadcast complete.")
 
         return round_clients[0].model
+
+    def evaluate_clients(self, test_dataset):
+        round_acc = []
+        with ThreadPool(len(self.clients)) as pool:
+            pool.map(lambda c: round_acc.append(c.model.eval_accuracy(test_dataset)), self.clients)
+        avg_accuracy = np.mean(round_acc)
+        return avg_accuracy
