@@ -4,7 +4,7 @@ from multiprocessing.pool import ThreadPool
 from numpy.random import default_rng
 import logging
 
-from config import config
+from config import config, params
 
 
 RNG = default_rng(seed=1)
@@ -47,16 +47,16 @@ class Server:
     Central server node implementing FedAvg algorithm.
     """
 
-    def __init__(self, clients, threaded=False):
+    def __init__(self, clients):
         self.clients = clients
         self.max_clients = len(self.clients)
-        self.threaded = threaded
+        self.threaded = config["use_threads"]
         logger.info(f"Initialized server with threaded mode: "
-                    f"{'enabled' if threaded else 'disabled'}.")
+                    f"{'enabled' if self.threaded else 'disabled'}.")
 
     def execute_round(self, round_index=None):
         round_clients = RNG.choice(
-            self.clients, size=max(int(0.1*self.max_clients), 1), replace=False)
+            self.clients, size=max(int(params['c_rate']*self.max_clients), 1), replace=False)
         logger.info(f"Updating selected {len(round_clients)} clients: "
                     f"{', '.join([str(c.id) for c in round_clients])}.")
 

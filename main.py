@@ -60,7 +60,7 @@ def initialize_clients(train_datasets):
     for i in range(params["num_clients"]):
         clients.append(Client(i, model_init(), train_datasets[i], epochs=params["model_epochs"]))
         clients[i].model.compile(jit_compile=True)
-    server = Server(clients, threaded=config["use_threads"])
+    server = Server(clients)
     logger.info("Clients and server nodes initialized")
     return clients, server
 
