@@ -77,10 +77,10 @@ def save_data(clients, avg_accuracy, accuracy, updated_model, checkpoint=False):
         np.save(f, np.array(avg_accuracy))
     with open(os.path.join(config["resultpath"], "accuracy"), "wb") as f:
         np.save(f, np.array(accuracy))
+    with open(os.path.join(config["resultpath"], "client_rounds"), "wb") as f:
+        np.save(f, np.array([c.rounds for c in clients]))
 
     if not checkpoint:
-        with open(os.path.join(config["resultpath"], "client_rounds"), "wb") as f:
-            np.save(f, np.array([c.rounds for c in clients]))
         for c in clients:
             c.model.save_weights(os.path.join(config["resultpath"], f"model_{c.id}"))
         updated_model.save_weights(os.path.join(config["resultpath"], "final_model"))
