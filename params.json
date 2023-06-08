@@ -1,7 +1,7 @@
 {
-    "layer_epochs":20,
-    "bias_threshold":10,
-    "learn_rate":0.1,
+    "layer_epochs":50,
+    "scale_factor":4,
+    "learn_rate":0.3,
     "weight_decay":1e-5,
     "model_units":[
         784,
@@ -10,7 +10,7 @@
         500
     ],
     "model_epochs":50,
-    "num_rounds":5,
+    "num_rounds":50,
     "max_clients":500,
     "num_clients":100,
     "c_rate":0.1,

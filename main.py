@@ -53,6 +53,7 @@ def initialize_clients(train_datasets):
         return FFNetwork(
             units=params["model_units"],
             layer_epochs=params["layer_epochs"],
+            scale=params["scale_factor"],
             layer_optimizer=keras.optimizers.legacy.Adam(
                 learning_rate=params["learn_rate"], decay=params["weight_decay"])
         )

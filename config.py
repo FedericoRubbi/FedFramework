@@ -32,7 +32,7 @@ if params["prefetch_buf"] is None:
 def log_params():
     logger.info("Saving current parameters configuration.")
     logger.info(f"- layer_epochs:  {params['layer_epochs']}")
-    logger.info(f"- bias_threshold:  {params['bias_threshold']}")
+    logger.info(f"- scale_factor:  {params['scale_factor']}")
     logger.info(f"- learn_rate:  {params['learn_rate']}")
     logger.info(f"- weight_decay:  {params['weight_decay']}")
     logger.info(f"- model_units:  {params['model_units']}")
