@@ -14,7 +14,7 @@ class FFDense(keras.layers.Layer):
     Custom layer class implementing FF algorihtm logic.
     """
 
-    def __init__(self, units, optimizer, loss_metric, epochs=50, threshold=10, use_bias=True,
+    def __init__(self, units, optimizer, loss_metric, epochs=50, scale=10, use_bias=True,
                  kernel_initializer="glorot_uniform", bias_initializer="zeros",
                  kernel_regularizer=None, bias_regularizer=None, **kwargs):
         super().__init__(**kwargs)
@@ -30,7 +30,7 @@ class FFDense(keras.layers.Layer):
         self.relu = keras.layers.ReLU()
         self.optimizer = optimizer
         self.loss_metric = loss_metric
-        self.threshold = threshold
+        self.scale = scale
         self.epochs = epochs
 
     def call(self, inputs):  # normalize and run the input through the dense layer
@@ -44,18 +44,14 @@ class FFDense(keras.layers.Layer):
         logger.info("Training layer.")
         for i in range(self.epochs):
             with tf.GradientTape() as tape:
-                g_pos = tf.math.reduce_mean(
-                    tf.math.pow(self.call(x_pos), 2), 1)
-                g_neg = tf.math.reduce_mean(
-                    tf.math.pow(self.call(x_neg), 2), 1)
-                loss = tf.math.log(
-                    1 + tf.math.exp(tf.concat([-g_pos + self.threshold, g_neg - self.threshold], 0)))
+                g_pos = tf.math.reduce_mean(tf.math.pow(self.call(x_pos), 2), 1)
+                g_neg = tf.math.reduce_mean(tf.math.pow(self.call(x_neg), 2), 1)
+                # Computing SymBa loss.
+                loss = tf.math.log(1 + tf.math.exp(-self.scale*tf.math.subtract(g_pos, g_neg)))
                 mean_loss = tf.cast(tf.math.reduce_mean(loss), tf.float32)
                 self.loss_metric.update_state([mean_loss])
-
             gradients = tape.gradient(mean_loss, self.dense.trainable_weights)
-            self.optimizer.apply_gradients(
-                zip(gradients, self.dense.trainable_weights))
+            self.optimizer.apply_gradients(zip(gradients, self.dense.trainable_weights))
         return (tf.stop_gradient(self.call(x_pos)),
                 tf.stop_gradient(self.call(x_neg)),
                 self.loss_metric.result())
@@ -130,11 +126,9 @@ class FFNetwork(keras.Model):
     @tf.function(jit_compile=True)
     def train_step(self, data):
         x, y = data
-        # flatten input
-        x = tf.reshape(x, [-1, tf.shape(x)[1] * tf.shape(x)[2]])
+        x = tf.reshape(x, [-1, tf.shape(x)[1] * tf.shape(x)[2]])  # flatten input
         x_pos, y = tf.map_fn(fn=self.overlay_y_on_x, elems=(x, y))
-        #random_y = tf.random.shuffle(y)
-        random_y = (y + tf.random.uniform((), 1, 10, tf.int64)) % 10
+        random_y = (y + tf.random.uniform((), 1, 10, tf.int64)) % 10  # mismatched labels
         x_neg, y = tf.map_fn(fn=self.overlay_y_on_x, elems=(x, random_y))
         h_pos, h_neg = x_pos, x_neg
 
