@@ -14,7 +14,7 @@ class FFDense(keras.layers.Layer):
     Custom layer class implementing FF algorihtm logic.
     """
 
-    def __init__(self, units, optimizer, loss_metric, epochs=50, threshold=10, use_bias=True,
+    def __init__(self, units, epochs, threshold, optimizer, loss_metric, use_bias=True,
                  kernel_initializer="glorot_uniform", bias_initializer="zeros",
                  kernel_regularizer=None, bias_regularizer=None, **kwargs):
         super().__init__(**kwargs)
@@ -66,7 +66,7 @@ class FFNetwork(keras.Model):
     FF model class.
     """
 
-    def __init__(self, units, layer_epochs=50,
+    def __init__(self, units, layer_epochs=50, threshold=10,
                  layer_optimizer=keras.optimizers.legacy.Adam(
                      learning_rate=0.03),
                  **kwargs):
@@ -75,12 +75,11 @@ class FFNetwork(keras.Model):
         self.units = units
         self.layer_epochs = layer_epochs
         self.layer_optimizer = layer_optimizer
-        self.cumulative_loss = tf.Variable(0.0, trainable=False,
-                                           dtype=tf.float32)
+        self.cumulative_loss = tf.Variable(0.0, trainable=False, dtype=tf.float32)
         self.loss_count = tf.Variable(0.0, trainable=False, dtype=tf.float32)
         self.layer_list = [keras.Input(shape=(units[0],))]
-        self.layer_list += [FFDense(units[i], optimizer=layer_optimizer, epochs=layer_epochs,
-                                    loss_metric=keras.metrics.Mean()) for i in range(1, len(units))]
+        self.layer_list += [FFDense(units[i], layer_epochs, threshold, layer_optimizer,
+                                    keras.metrics.Mean()) for i in range(1, len(units))]
 
     def get_config(self):
         return {
