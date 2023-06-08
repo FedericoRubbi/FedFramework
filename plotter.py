@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import logging
+import json
 from numpy.random import default_rng
 
 from config import config, params
@@ -27,6 +28,9 @@ def load_data(path=None):
 
 
 def plot(path=None, show_plots=False):
+    if path is not None:  # load simulation parameters if any
+        with open(os.path.join(path, "params.json"), "r") as file:
+            params = json.load(file)
     path = config["resultpath"] if path is None else path
     logger.info(f"PLotting loss and accuracy for simulation:\t{path}")
     os.makedirs(path, exist_ok=True)
@@ -68,6 +72,8 @@ def plot(path=None, show_plots=False):
     plt.savefig(os.path.join(path, "loss.png"))
     if show_plots:
         plt.show()
+    else:
+        plt.clf()
 
     plt.grid()
     plt.plot(np.linspace(0, params["num_rounds"], num=len(avg_loss)), avg_loss, color='dodgerblue')
@@ -75,6 +81,8 @@ def plot(path=None, show_plots=False):
     plt.savefig(os.path.join(path, "avg_loss.png"))
     if show_plots:
         plt.show()
+    else:
+        plt.clf()
 
     plt.grid()
     plt.plot(np.linspace(1, params["num_rounds"], num=len(accuracy)), accuracy, color='dodgerblue',
@@ -86,6 +94,8 @@ def plot(path=None, show_plots=False):
     plt.savefig(os.path.join(path, "accuracy.png"))
     if show_plots:
         plt.show()
+    else:
+        plt.clf()
 
     plt.grid()
     plt.plot(np.linspace(1, params["num_rounds"], num=len(avg_accuracy)), avg_accuracy,
@@ -94,8 +104,10 @@ def plot(path=None, show_plots=False):
     plt.savefig(os.path.join(path, "avg_accuracy.png"))
     if show_plots:
         plt.show()
+    else:
+        plt.clf()
     logger.info("Done plotting data.")
 
 
 if __name__ == "__main__":
-    plot(path='simulations/results/2023-06-05_14-14-25', show_plots=True)
+    plot(path='simulations/results/2023-06-08_00-49-13', show_plots=True)
