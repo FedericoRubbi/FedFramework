@@ -30,9 +30,11 @@ def load_data(path=None):
 def plot(path=None, show_plots=False):
     if path is not None:  # load simulation parameters if any
         with open(os.path.join(path, "params.json"), "r") as file:
-            params = json.load(file)
+            sim_params = json.load(file)
+            for key in params.keys():
+                params[key] = sim_params[key]
     path = config["resultpath"] if path is None else path
-    logger.info(f"PLotting loss and accuracy for simulation:\t{path}")
+    logger.info(f"Plotting loss and accuracy for simulation:\t{path}")
     os.makedirs(path, exist_ok=True)
 
     loss_data, avg_accuracy, accuracy, client_rounds = load_data(path)

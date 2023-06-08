@@ -83,7 +83,7 @@ def save_data(clients, avg_accuracy, accuracy, updated_model, checkpoint=False):
         for c in clients:
             c.model.save_weights(os.path.join(config["resultpath"], f"model_{c.id}"))
         updated_model.save_weights(os.path.join(config["resultpath"], "final_model"))
-        with open(os.path.join(config["scriptpath"], "params.json"), "w") as file:
+        with open(os.path.join(config["resultpath"], "params.json"), "w") as file:
             json.dump(params, file)
 
 
