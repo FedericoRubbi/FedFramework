@@ -49,7 +49,7 @@ class FFDense(keras.layers.Layer):
                 # Computing SymBa loss.
                 loss = tf.math.log(1 + tf.math.exp(-self.scale*tf.math.subtract(g_pos, g_neg)))
                 mean_loss = tf.cast(tf.math.reduce_mean(loss), tf.float32)
-                self.loss_metric.update_state([mean_loss])
+                self.loss_metric.update_state([mean_loss])  # add layer epoch loss
             gradients = tape.gradient(mean_loss, self.dense.trainable_weights)
             self.optimizer.apply_gradients(zip(gradients, self.dense.trainable_weights))
         return (tf.stop_gradient(self.call(x_pos)),
@@ -62,7 +62,7 @@ class FFNetwork(keras.Model):
     FF model class.
     """
 
-    def __init__(self, units, layer_epochs=50, scale=4,
+    def __init__(self, units, layer_epochs=50, scale=1,
                  layer_optimizer=keras.optimizers.legacy.Adam(learning_rate=0.03), **kwargs):
         super().__init__(**kwargs)
         logger.info("Initializing model.")

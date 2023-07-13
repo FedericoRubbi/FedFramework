@@ -2,6 +2,8 @@
 clients/
 simulations/
 log/
+log/job.log
+job.pbs
 *.index
 *.data*
 *.o*

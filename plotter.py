@@ -112,4 +112,4 @@ def plot(path=None, show_plots=False):
 
 
 if __name__ == "__main__":
-    plot(path='simulations/results/2023-06-08_17-20-11', show_plots=True)
+    plot(path='simulations/results/2023-06-14_18-27-51', show_plots=True)
