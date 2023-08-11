@@ -29,9 +29,9 @@ class Client:
         logger.info(f"Initialized client {id} "
                     f"with dataset size: {self.dataset_size} samples.")
 
-    def update(self, round_index=None, callbacks=[]):
+    def update(self, server_weights, round_index=None, callbacks=[]):
         logger.info(f"Updating client: {self.id}.")
-        history = self.model.fit(self.dataset, epochs=self.epochs, callbacks=callbacks)
+        history = self.model.update(self.dataset, server_weights, epochs=self.epochs, callbacks=callbacks)
         logger.info(f"Done updating client: {self.id}.")
         self.history.append(history)
         self.round_cnt += 1
@@ -49,6 +49,7 @@ class Server:
 
     def __init__(self, clients):
         self.clients = clients
+        self.model_weights = clients[0].model.get_weights()  # clients have random initialized models
         self.max_clients = len(self.clients)
         self.threaded = config["use_threads"]
         logger.info(f"Initialized server with threaded mode: "
@@ -62,7 +63,7 @@ class Server:
 
         if self.threaded:
             with ThreadPool(len(round_clients)) as pool:
-                pool.map(lambda client: client.update(round_index), round_clients)
+                pool.map(lambda client: client.update(round_index, self.model_weights), round_clients)
         else:
             for client in round_clients:
                 client.update(round_index)

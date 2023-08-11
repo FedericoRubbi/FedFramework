@@ -62,7 +62,7 @@ class FFNetwork(keras.Model):
     FF model class.
     """
 
-    def __init__(self, units, layer_epochs=50, scale=1,
+    def __init__(self, units, layer_epochs=50, scale=1, prox_regularizer=0
                  layer_optimizer=keras.optimizers.legacy.Adam(learning_rate=0.03), **kwargs):
         super().__init__(**kwargs)
         logger.info("Initializing model.")
@@ -74,6 +74,8 @@ class FFNetwork(keras.Model):
         self.layer_list = [keras.Input(shape=(units[0],))]
         self.layer_list += [FFDense(units[i], layer_epochs, scale, layer_optimizer,
                                     keras.metrics.Mean()) for i in range(1, len(units))]
+        self.prox_regularizer = prox_regularizer
+        self.server_weights = None
 
     def get_config(self):
         return {
@@ -129,7 +131,7 @@ class FFNetwork(keras.Model):
         x_neg, y = tf.map_fn(fn=self.overlay_y_on_x, elems=(x, random_y))
         h_pos, h_neg = x_pos, x_neg
 
-        for i, layer in enumerate(self.layers):  # TODO: check layer_list
+        for i, layer in enumerate(self.layers):
             if isinstance(layer, FFDense):
                 logger.info(f"Training dense layer {i+1}.")
                 h_pos, h_neg, loss = layer.forward_forward(h_pos, h_neg)
@@ -139,6 +141,9 @@ class FFNetwork(keras.Model):
             else:
                 logger.info("Feeding data to the input layer.")
                 x = layer(x)
+        # FedProx regularized loss.
+        self.cumulative_loss += self.prox_regularizer / 2 * np.sum(np.square(self.get_weights() -
+                                                                             self.server_weights))
 
         logger.info("Computing mean loss and updating metrics.")
         mean_res = tf.math.divide(self.cumulative_loss, self.loss_count)
@@ -154,3 +159,8 @@ class FFNetwork(keras.Model):
         preds = self.predict(tf.convert_to_tensor(test_samples))
         preds = preds.reshape((preds.shape[0], preds.shape[1]))
         return accuracy_score(preds, test_labels)
+
+    def udpate(self, dataset, server_weights, epochs, callbacks=None):
+        self.server_weights = server_weights
+        history = self.model.fit(dataset, epochs=epochs, callbacks=callbacks)
+        return history
